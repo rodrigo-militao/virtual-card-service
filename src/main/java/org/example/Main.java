@@ -12,21 +12,7 @@ import org.example.infrastructure.repository.InMemoryTransactionRepository;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        /*
-         * Scenario: Simplified Virtual Card Service
-         * You're building a backend service for creating and managing virtual cards.
-         * Each card belongs to a user and has a limit.
-         * Users can request transactions, and the system must validate and record them.
-         *
-         * Routes:
-         * POST /cards -> create a new card
-         * GET /cards/{userId} -> List all cards by user
-         *
-         * POST /authorize -> authorize a transaction
-         * If the card has enough balance, approve the transaction and reduce the balance.
-         * Otherwise, reject the transaction.
-         *
-         * */
+        //TODO: Improve DI and Controllers orchestration
 
         // Repositories
         var cardRepository = new InMemoryCardRepository();
