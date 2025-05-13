@@ -7,39 +7,46 @@ import org.example.domain.exception.NotFoundException;
 import org.example.domain.model.Card;
 import org.example.domain.model.CardType;
 import org.example.domain.model.Transaction;
+import org.example.domain.repository.CardRepository;
+import org.example.domain.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 public class AuthorizeTransactionUseCaseTest {
+    @Mock
+    private CardRepository cardRepository;
 
+    @Mock
+    private TransactionRepository transactionRepository;
+
+    @InjectMocks
     private AuthorizeTransactionUseCase useCase;
-    private InMemoryCardRepository cardRepository;
-    private InMemoryTransactionRepository transactionRepository;
 
     @BeforeEach
     void setUp() {
-        cardRepository = new InMemoryCardRepository();
-        transactionRepository = new InMemoryTransactionRepository();
-
-        useCase = new AuthorizeTransactionUseCase(
-                cardRepository,
-                transactionRepository
-        );
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     void shouldAuthorizeTransactionSuccessfully() {
         // Given
-        Card card = cardRepository.save(new Card(UUID.randomUUID(), CardType.VIRTUAL));
+        UUID cardId = UUID.randomUUID();
+        Card card = new Card(cardId, CardType.VIRTUAL);
         BigDecimal initialLimit = card.getLimit();
-        UUID cardId = card.getId();
-        BigDecimal amount = new BigDecimal(900);
+        BigDecimal amount = initialLimit.subtract(BigDecimal.ONE);
         AuthorizeTransactionCommand command = new AuthorizeTransactionCommand(cardId, amount);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
 
         // When
         Transaction transaction = useCase.execute(command);
@@ -68,11 +75,13 @@ public class AuthorizeTransactionUseCaseTest {
     @Test
     void shouldThrowAnExceptionIfCardHasNotEnoughLimit() {
         // Given
-        Card card = cardRepository.save(new Card(UUID.randomUUID(), CardType.VIRTUAL));
+        UUID cardId = UUID.randomUUID();
+        Card card = new Card(cardId, CardType.VIRTUAL);
         BigDecimal initialLimit = card.getLimit();
-        UUID cardId = card.getId();
         BigDecimal amount = initialLimit.add(BigDecimal.ONE);
         AuthorizeTransactionCommand command = new AuthorizeTransactionCommand(cardId, amount);
+
+        when(cardRepository.findById(cardId)).thenReturn(Optional.of(card));
 
         // When
         LimitExceedException exception = assertThrows(LimitExceedException.class, () -> useCase.execute(command));
