@@ -4,11 +4,12 @@ import org.example.domain.model.Card;
 import org.example.domain.repository.CardRepository;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class InMemoryCardRepository implements CardRepository {
 
-    private final Map<UUID, Card> storage = new HashMap<>();
+    private final Map<UUID, Card> storage = new ConcurrentHashMap<>();
 
     @Override
     public Card save(Card card) {
